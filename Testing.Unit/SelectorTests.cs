@@ -28,22 +28,59 @@ namespace Testing.Unit
         [TestMethod]
         public void TryAddItem()
         {
+            // Valid entry testing
             Selector selector = new Selector();
             var item = new Item()
             {
                 UniqueId = "a",
                 Name = "alpha",
-                Weight = 1
+                Entries = 1
             };
             selector.TryAddItem(item).Should().BeTrue();
             selector.TryAddItem("b").Should().BeTrue();
             selector.TryAddItem("c", "charlie").Should().BeTrue();
             selector.TryAddItem("d", "delta", 2).Should().BeTrue();
 
+            // Invalid entry testing
             selector.TryAddItem("b").Should().BeFalse();
             selector.TryAddItem(item).Should().BeFalse();
             selector.TryAddItem("c", "charlie").Should().BeFalse();
             selector.TryAddItem("d", "delta", 2).Should().BeFalse();
+
+            // Exception Testing
+            Action action = () => selector.TryAddItem((Item)null);
+            action.ShouldThrow<ArgumentNullException>().WithMessage("Value cannot be null.\r\nParameter name: item must have a value");
+
+            action = () => selector.TryAddItem(new Item()
+            {
+                UniqueId = null,
+                Name = null,
+                Entries = 0
+            });
+            action.ShouldThrow<ArgumentNullException>().WithMessage("Value cannot be null.\r\nParameter name: UniqueId must have a value");
+
+            action = () => selector.TryAddItem(new Item()
+            {
+                UniqueId = "a",
+                Name = null,
+                Entries = 0
+            });
+            action.ShouldThrow<ArgumentException>().WithMessage("Entries must have a value greater than 0");
+
+            action = () => selector.TryAddItem(string.Empty);
+            action.ShouldThrow<ArgumentNullException>().WithMessage("Value cannot be null.\r\nParameter name: uniqueId must have a value");
+
+            action = () => selector.TryAddItem(new Item()
+            {
+                UniqueId = null,
+                Name = null,
+                Entries = 0
+            });
+            action.ShouldThrow<ArgumentNullException>().WithMessage("Value cannot be null.\r\nParameter name: UniqueId must have a value");
+
+            action = () => selector.TryAddItem("a", null, 0);
+
+            action.ShouldThrow<ArgumentException>().WithMessage("Entries must have a value greater than 0");
         }
 
         [TestMethod]
@@ -54,7 +91,7 @@ namespace Testing.Unit
             {
                 UniqueId = "a",
                 Name = "alpha",
-                Weight = 1
+                Entries = 1
             };
             selector.TryAddItem(item).Should().BeTrue();
             selector.TryAddItem("b").Should().BeTrue();
@@ -106,25 +143,25 @@ namespace Testing.Unit
             {
                 UniqueId = "a",
                 Name = "alpha",
-                Weight = 2
+                Entries = 2
             });
             selector.TryAddItem(new Item()
             {
                 UniqueId = "b",
                 Name = "bravo",
-                Weight = 1
+                Entries = 1
             });
             selector.TryAddItem(new Item()
             {
                 UniqueId = "c",
                 Name = "charlie",
-                Weight = 5
+                Entries = 5
             });
             selector.TryAddItem(new Item()
             {
                 UniqueId = "d",
                 Name = "delta",
-                Weight = 1
+                Entries = 1
             });
             var items = selector.GenerateList();
             var selected = selector.RandomSelect(items.Count);

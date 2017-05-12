@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RandomSelection.Library
+﻿namespace RandomSelection.Library
 {
     public class Item
     {
@@ -19,11 +13,11 @@ namespace RandomSelection.Library
         public string Name { get; set; }
 
         /// <summary>
-        /// Weight or number of changes this item should get. The default is one but if the item
+        /// Number of entries this item should get. The default is one but if the item
         /// should have an entry in the pool more than one time then set the number of total entries
-        /// for this item by this property
+        /// for this item through this property
         /// </summary>
-        public int Weight { get; set; }
+        public int Entries { get; set; }
 
         /// <summary>
         /// Default constructor Initializes
@@ -31,7 +25,7 @@ namespace RandomSelection.Library
         /// </summary>
         public Item()
         {
-            Weight = 1;
+            Entries = 1;
         }
 
         /// <summary>
@@ -55,13 +49,13 @@ namespace RandomSelection.Library
         /// </summary>
         /// <param name="uniqueId">Unique Id for the item</param>
         /// <param name="name">Descriptive name for the item</param>
-        /// <param name="weight">Weight associated with the item</param>
+        /// <param name="entries">Weight associated with the item</param>
         public Item(string uniqueId,
             string name,
-            int weight)
+            int entries)
             : this(uniqueId, name)
         {
-            Weight = weight;
+            Entries = entries;
         }
     }
 }
