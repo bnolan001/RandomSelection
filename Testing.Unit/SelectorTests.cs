@@ -11,6 +11,11 @@ namespace Testing.Unit
     [TestClass]
     public class SelectorTests
     {
+        /// <summary>
+        /// Verify that the <code>GenerateRandomIndex</code> creates numbers
+        /// that fall within the range of 0 to the max value defined by
+        /// the <code>upperLimit</code> parameter
+        /// </summary>
         [TestMethod]
         public void GenerateRandomIndex()
         {
@@ -25,6 +30,10 @@ namespace Testing.Unit
             }
         }
 
+        /// <summary>
+        /// Checks different conditions for adding entries to the list
+        /// and verifies expected result is returned
+        /// </summary>
         [TestMethod]
         public void TryAddItem()
         {
@@ -83,6 +92,9 @@ namespace Testing.Unit
             action.ShouldThrow<ArgumentException>().WithMessage("Entries must have a value greater than 0");
         }
 
+        /// <summary>
+        /// Verifies that the values added are accepted and not randomized yet
+        /// </summary>
         [TestMethod]
         public void GenerateList()
         {
@@ -106,6 +118,11 @@ namespace Testing.Unit
             generatedList[4].Should().Be("d");
         }
 
+        /// <summary>
+        /// Checks the <code>RandomizeList</code> function to verify that
+        /// values do not remain in the same order as to their insertion
+        /// order.
+        /// </summary>
         [TestMethod]
         public void RandomizeList()
         {
@@ -122,7 +139,7 @@ namespace Testing.Unit
 
             var selector = new Selector();
             var randomizedList = selector.RandomizeList(orderedList);
-
+            // Check each index and count the number of matches
             int orderedCt = 0;
             for (var idx = 0; idx < orderedList.Count; idx++)
             {
@@ -131,10 +148,17 @@ namespace Testing.Unit
                     orderedCt++;
                 }
             }
-
+            // Make sure that at least one of the elements are not in the same
+            // position.  Nearly all should not be.
             orderedCt.Should().BeLessThan(orderedList.Count);
         }
 
+        /// <summary>
+        /// Verifies that the logic creates a list with the appropriate
+        /// number of entries based on the <code>Item</code> definition.
+        /// Also checks to see that the <code>RandomSelect</code> returns
+        /// the correct number of entries for each item after randomization.
+        /// </summary>
         [TestMethod]
         public void Select()
         {
