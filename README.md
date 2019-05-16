@@ -5,14 +5,14 @@ The inspiration for this library came from watching people who were entered into
 1.  Create an instance of the Selector class, add two items representing employees and then selects one employee at random.
 
 ```c#
-Selector selector = new Selector();
+var selector = new Selector<string>();
 selector.TryAddItem("m0392", "Doe, John", 1); 
 selector.TryAddItem("m0392", "Moe, Jane", 1); 
 var winner = selector.RandomSelect();
 ```
 2.  Create an instance of the Selector class, add five items where the third entry has two more entries than the others.  Then two winners are selected
 ```c#
-Selector selector = new Selector();
+var selector = new Selector<string>();
 selector.TryAddItem("jen", "jen", 1); 
 selector.TryAddItem("michael", "michael", 1); 
 selector.TryAddItem("staci", "staci", 3); 
