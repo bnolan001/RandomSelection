@@ -1,6 +1,6 @@
-﻿namespace RandomSelection.Library
+﻿namespace BNolan.RandomSelection.Library
 {
-    public class Item
+    public class Item<T>
     {
         /// <summary>
         /// Unique identifier for this item
@@ -8,9 +8,9 @@
         public string UniqueId { get; set; }
 
         /// <summary>
-        /// Descriptive name associated with this item
+        /// Object to associate with the unique id 
         /// </summary>
-        public string Name { get; set; }
+        public T Value { get; set; }
 
         /// <summary>
         /// Number of entries this item should get. The default is one but if the item
@@ -34,13 +34,13 @@
         /// <code>Weight</code>defaulted to 1
         /// </summary>
         /// <param name="uniqueId">Unique Id for the item</param>
-        /// <param name="name">Descriptive name for the item</param>
+        /// <param name="value">Object associated with the unique id</param>
         public Item(string uniqueId,
-            string name)
+            T value)
             : this()
         {
             UniqueId = uniqueId;
-            Name = name;
+            Value = value;
         }
 
         /// <summary>
@@ -48,14 +48,23 @@
         /// <code>Weight</code> set from input
         /// </summary>
         /// <param name="uniqueId">Unique Id for the item</param>
-        /// <param name="name">Descriptive name for the item</param>
+        /// <param name="value">Object associated with the unique id</param>
         /// <param name="entries">Weight associated with the item</param>
         public Item(string uniqueId,
-            string name,
+            T value,
             int entries)
-            : this(uniqueId, name)
+            : this(uniqueId, value)
         {
             Entries = entries;
+        }
+
+        /// <summary>
+        /// Gets the string representation of the Value object associated with the Item
+        /// </summary>
+        /// <returns>String representation of the Item.Value</returns>
+        public override string ToString()
+        {
+            return Value.ToString();
         }
     }
 }

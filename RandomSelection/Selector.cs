@@ -1,20 +1,20 @@
-﻿using RandomSelection.Library;
+﻿using BNolan.RandomSelection.Library;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace RandomSelection
+namespace BNolan.RandomSelection
 {
-    public class Selector
+    public class Selector<T>
     {
-        private Dictionary<string, Item> _dicItems;
+        private Dictionary<string, Item<T>> _dicItems;
 
         /// <summary>
         /// Default Constructor
         /// </summary>
         public Selector()
         {
-            _dicItems = new Dictionary<string, Item>();
+            _dicItems = new Dictionary<string, Item<T>>();
         }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace RandomSelection
         /// <exception cref="ArgumentNullException">If the <code>item</code> or
         /// <code>item.UniqueId</code> are null or empty</exception>
         /// <exception cref="ArgumentException">If <code>item.Entries</code> is less than 1</exception>
-        public bool TryAddItem(Item item)
+        public bool TryAddItem(Item<T> item)
         {
             if (item == null)
             {
@@ -42,7 +42,7 @@ namespace RandomSelection
                 throw new ArgumentException(string.Format("{0} must have a value greater than 0", nameof(item.Entries)));
             }
 
-            return TryAddItem(item.UniqueId, item.Name, item.Entries);
+            return TryAddItem(item.UniqueId, item.Value, item.Entries);
         }
 
         /// <summary>
@@ -51,35 +51,45 @@ namespace RandomSelection
         /// <param name="uniqueId">Unique identifier that no other items will share</param>
         /// <returns>False if the UniqueId assocaited with the item already exists</returns>
         /// <exception cref="ArgumentNullException">If the <code>UniqueId</code> is null or empty</exception>
-        public bool TryAddItem(string uniqueId)
+        public bool TryAddItem(T uniqueId)
         {
-            return TryAddItem(uniqueId, uniqueId, 1);
+            if (uniqueId == null)
+            {
+                throw new ArgumentNullException(string.Format("{0} must have a value", nameof(uniqueId)));
+            }
+            var item = new Item<T>()
+            {
+                UniqueId = uniqueId.ToString(),
+                Value = uniqueId,
+                Entries = 1
+            };
+            return TryAddItem(item);
         }
 
         /// <summary>
         /// Adds <code>uniqueId</code> and <code>name</code> to storage
         /// </summary>
         /// <param name="uniqueId">Unique identifier that no other items will share</param>
-        /// <param name="name">Descriptive name associated with the item</param>
+        /// <param name="value">Descriptive name associated with the item</param>
         /// <returns>False if the UniqueId assocaited with the item already exists</returns>
         /// <exception cref="ArgumentNullException">If the <code>UniqueId</code> is null or empty</exception>
         public bool TryAddItem(string uniqueId,
-            string name)
+            T value)
         {
-            return TryAddItem(uniqueId, name, 1); ;
+            return TryAddItem(uniqueId, value, 1); ;
         }
 
         /// <summary>
         /// Adds <code>uniqueId</code> and <code>name</code> to storage
         /// </summary>
         /// <param name="uniqueId">Unique identifier that no other items will share</param>
-        /// <param name="name">Descriptive name associated with the item</param>
+        /// <param name="value">Descriptive name associated with the item</param>
         /// <param name="entries">Number of entries given to this item</param>
         /// <returns>False if the UniqueId assocaited with the item already exists</returns>
         /// <exception cref="ArgumentNullException">If the <code>UniqueId</code> is null or empty</exception>
         /// <exception cref="ArgumentException">If <code>entries</code> is less than 1</exception>
         public bool TryAddItem(string uniqueId,
-            string name,
+            T value,
             int entries)
         {
             if (string.IsNullOrEmpty(uniqueId))
@@ -97,7 +107,7 @@ namespace RandomSelection
                 return false;
             }
 
-            _dicItems.Add(upperId, new Item(uniqueId, name, entries));
+            _dicItems.Add(upperId, new Item<T>(uniqueId, value, entries));
 
             return true;
         }
@@ -196,9 +206,9 @@ namespace RandomSelection
         /// </summary>
         /// <param name="numToSelect">Number of items to select</param>
         /// <returns>List of selected Items</returns>
-        public List<Item> RandomSelect(int numToSelect)
+        public List<Item<T>> RandomSelect(int numToSelect)
         {
-            var selected = new List<Item>();
+            var selected = new List<Item<T>>();
             var fullList = GenerateList();
             var randomizedList = RandomizeList(fullList);
 

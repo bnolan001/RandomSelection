@@ -1,10 +1,10 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using FluentAssertions;
-using RandomSelection;
 using System.Collections.Generic;
-using RandomSelection.Library;
+using BNolan.RandomSelection.Library;
 using System.Linq;
+using BNolan.RandomSelection;
 
 namespace Testing.Unit
 {
@@ -19,7 +19,7 @@ namespace Testing.Unit
         [TestMethod]
         public void GenerateRandomIndex()
         {
-            Selector selector = new Selector();
+            var selector = new Selector<string>();
             int startNumber = 1000000000;
             while (startNumber > 0)
             {
@@ -35,14 +35,14 @@ namespace Testing.Unit
         /// and verifies expected result is returned
         /// </summary>
         [TestMethod]
-        public void TryAddItem()
+        public void TryAddItem_ArgumentNullException_NullObject()
         {
-            // Valid entry testing
-            Selector selector = new Selector();
-            var item = new Item()
+            // Invalid entry testing
+            var selector = new Selector<string>();
+            var item = new Item<string>()
             {
                 UniqueId = "a",
-                Name = "alpha",
+                Value = "alpha",
                 Entries = 1
             };
             selector.TryAddItem(item).Should().BeTrue();
@@ -57,37 +57,65 @@ namespace Testing.Unit
             selector.TryAddItem("d", "delta", 2).Should().BeFalse();
 
             // Exception Testing
-            Action action = () => selector.TryAddItem((Item)null);
+            Action action = () => selector.TryAddItem((Item<string>)null);
             action.ShouldThrow<ArgumentNullException>().WithMessage("Value cannot be null.\r\nParameter name: item must have a value");
+        }
 
-            action = () => selector.TryAddItem(new Item()
+
+        [TestMethod]
+        public void TryAddItem_ArgumentNullException_NullValue()
+        {
+            var selector = new Selector<string>();
+            Action action = () => selector.TryAddItem(new Item<string>()
             {
                 UniqueId = null,
-                Name = null,
+                Value = null,
                 Entries = 0
             });
             action.ShouldThrow<ArgumentNullException>().WithMessage("Value cannot be null.\r\nParameter name: UniqueId must have a value");
 
-            action = () => selector.TryAddItem(new Item()
+        }
+
+
+        [TestMethod]
+        public void TryAddItem_ArgumentException_ZeroEntryValue()
+        {
+            var selector = new Selector<string>();
+            Action action = () => selector.TryAddItem(new Item<string>()
             {
                 UniqueId = "a",
-                Name = null,
+                Value = null,
                 Entries = 0
             });
             action.ShouldThrow<ArgumentException>().WithMessage("Entries must have a value greater than 0");
+        }
 
-            action = () => selector.TryAddItem(string.Empty);
+        [TestMethod]
+        public void TryAddItem_ArgumentNullException_EmptyItem()
+        {
+            var selector = new Selector<string>();
+            Action action = () => selector.TryAddItem(new Item<string>());
             action.ShouldThrow<ArgumentNullException>().WithMessage("Value cannot be null.\r\nParameter name: uniqueId must have a value");
+        }
 
-            action = () => selector.TryAddItem(new Item()
+        [TestMethod]
+        public void TryAddItem_ArgumentNullException_NullIdValueZeroEntries()
+        {
+            var selector = new Selector<string>();
+            Action action = () => selector.TryAddItem(new Item<string>()
             {
                 UniqueId = null,
-                Name = null,
+                Value = null,
                 Entries = 0
             });
             action.ShouldThrow<ArgumentNullException>().WithMessage("Value cannot be null.\r\nParameter name: UniqueId must have a value");
+        }
 
-            action = () => selector.TryAddItem("a", null, 0);
+        [TestMethod]
+        public void TryAddItem_ArgumentNullException_NullValueZeroEntries()
+        {
+            var selector = new Selector<string>();
+            Action action = () => selector.TryAddItem("a", null, 0);
 
             action.ShouldThrow<ArgumentException>().WithMessage("Entries must have a value greater than 0");
         }
@@ -98,11 +126,11 @@ namespace Testing.Unit
         [TestMethod]
         public void GenerateList()
         {
-            Selector selector = new Selector();
-            var item = new Item()
+            var selector = new Selector<string>();
+            var item = new Item<string>()
             {
                 UniqueId = "a",
-                Name = "alpha",
+                Value = "alpha",
                 Entries = 1
             };
             selector.TryAddItem(item).Should().BeTrue();
@@ -137,7 +165,7 @@ namespace Testing.Unit
                 "g"
             };
 
-            var selector = new Selector();
+            var selector = new Selector<string>();
             var randomizedList = selector.RandomizeList(orderedList);
             // Check each index and count the number of matches
             int orderedCt = 0;
@@ -162,29 +190,29 @@ namespace Testing.Unit
         [TestMethod]
         public void Select()
         {
-            var selector = new Selector();
-            selector.TryAddItem(new Item()
+            var selector = new Selector<string>();
+            selector.TryAddItem(new Item<string>()
             {
                 UniqueId = "a",
-                Name = "alpha",
+                Value = "alpha",
                 Entries = 2
             });
-            selector.TryAddItem(new Item()
+            selector.TryAddItem(new Item<string>()
             {
                 UniqueId = "b",
-                Name = "bravo",
+                Value = "bravo",
                 Entries = 1
             });
-            selector.TryAddItem(new Item()
+            selector.TryAddItem(new Item<string>()
             {
                 UniqueId = "c",
-                Name = "charlie",
+                Value = "charlie",
                 Entries = 5
             });
-            selector.TryAddItem(new Item()
+            selector.TryAddItem(new Item<string>()
             {
                 UniqueId = "d",
-                Name = "delta",
+                Value = "delta",
                 Entries = 1
             });
             var items = selector.GenerateList();

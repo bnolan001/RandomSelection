@@ -7,7 +7,7 @@
     <ProjectGuid>{7058813E-5045-4979-ADFE-2EC7085BA010}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RandomSelection</RootNamespace>
+    <RootNamespace>BNolan.RandomSelection</RootNamespace>
     <AssemblyName>RandomSelection</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -43,6 +43,9 @@
     <Compile Include="Selector.cs" />
     <Compile Include="Library\Item.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="RandomSelection.nuspec" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
