@@ -29,17 +29,17 @@ namespace BNolan.RandomSelection
         {
             if (item == null)
             {
-                throw new ArgumentNullException(string.Format("{0} must have a value", nameof(item)));
+                throw new ArgumentNullException(nameof(item), "Object cannot be null.");
             }
 
             if (string.IsNullOrEmpty(item.UniqueId))
             {
-                throw new ArgumentNullException(string.Format("{0} must have a value", nameof(item.UniqueId)));
+                throw new ArgumentNullException(nameof(item.UniqueId), "Value cannot be null.");
             }
 
             if (item.Entries < 1)
             {
-                throw new ArgumentException(string.Format("{0} must have a value greater than 0", nameof(item.Entries)));
+                throw new ArgumentException("Must have a value greater than 0.", nameof(item.Entries));
             }
 
             return TryAddItem(item.UniqueId, item.Value, item.Entries);
@@ -55,7 +55,7 @@ namespace BNolan.RandomSelection
         {
             if (uniqueId == null)
             {
-                throw new ArgumentNullException(string.Format("{0} must have a value", nameof(uniqueId)));
+                throw new ArgumentNullException(nameof(uniqueId), "Value cannot be null.");
             }
             var item = new Item<T>()
             {
@@ -94,12 +94,12 @@ namespace BNolan.RandomSelection
         {
             if (string.IsNullOrEmpty(uniqueId))
             {
-                throw new ArgumentNullException(string.Format("{0} must have a value", nameof(uniqueId)));
+                throw new ArgumentNullException(nameof(uniqueId), "Value cannot be null.");
             }
 
             if (entries < 1)
             {
-                throw new ArgumentException(string.Format("{0} must have a value greater than 0", nameof(entries)));
+                throw new ArgumentException("Must have a value greater than 0.", nameof(entries));
             }
             var upperId = uniqueId.ToUpper();
             if (_dicItems.ContainsKey(upperId))

@@ -1,14 +1,14 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using FluentAssertions;
 using System.Collections.Generic;
 using BNolan.RandomSelection.Library;
 using System.Linq;
 using BNolan.RandomSelection;
+using NUnit.Framework;
 
 namespace Testing.Unit
 {
-    [TestClass]
+    [TestFixture]
     public class SelectorTests
     {
         /// <summary>
@@ -16,7 +16,7 @@ namespace Testing.Unit
         /// that fall within the range of 0 to the max value defined by
         /// the <code>upperLimit</code> parameter
         /// </summary>
-        [TestMethod]
+        [Test]
         public void GenerateRandomIndex()
         {
             var selector = new Selector<string>();
@@ -34,7 +34,7 @@ namespace Testing.Unit
         /// Checks different conditions for adding entries to the list
         /// and verifies expected result is returned
         /// </summary>
-        [TestMethod]
+        [Test]
         public void TryAddItem_ArgumentNullException_NullObject()
         {
             // Invalid entry testing
@@ -58,11 +58,11 @@ namespace Testing.Unit
 
             // Exception Testing
             Action action = () => selector.TryAddItem((Item<string>)null);
-            action.ShouldThrow<ArgumentNullException>().WithMessage("Value cannot be null.\r\nParameter name: item must have a value");
+            action.Should().Throw<ArgumentNullException>().WithMessage("Object cannot be null. (Parameter 'item')");
         }
 
 
-        [TestMethod]
+        [Test]
         public void TryAddItem_ArgumentNullException_NullValue()
         {
             var selector = new Selector<string>();
@@ -72,12 +72,12 @@ namespace Testing.Unit
                 Value = null,
                 Entries = 0
             });
-            action.ShouldThrow<ArgumentNullException>().WithMessage("Value cannot be null.\r\nParameter name: UniqueId must have a value");
+            action.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'UniqueId')");
 
         }
 
 
-        [TestMethod]
+        [Test]
         public void TryAddItem_ArgumentException_ZeroEntryValue()
         {
             var selector = new Selector<string>();
@@ -87,18 +87,18 @@ namespace Testing.Unit
                 Value = null,
                 Entries = 0
             });
-            action.ShouldThrow<ArgumentException>().WithMessage("Entries must have a value greater than 0");
+            action.Should().Throw<ArgumentException>().WithMessage("Must have a value greater than 0. (Parameter 'Entries')");
         }
 
-        [TestMethod]
+        [Test]
         public void TryAddItem_ArgumentNullException_EmptyItem()
         {
             var selector = new Selector<string>();
             Action action = () => selector.TryAddItem(new Item<string>());
-            action.ShouldThrow<ArgumentNullException>().WithMessage("Value cannot be null.\r\nParameter name: uniqueId must have a value");
+            action.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'UniqueId')");
         }
 
-        [TestMethod]
+        [Test]
         public void TryAddItem_ArgumentNullException_NullIdValueZeroEntries()
         {
             var selector = new Selector<string>();
@@ -108,22 +108,22 @@ namespace Testing.Unit
                 Value = null,
                 Entries = 0
             });
-            action.ShouldThrow<ArgumentNullException>().WithMessage("Value cannot be null.\r\nParameter name: UniqueId must have a value");
+            action.Should().Throw<ArgumentException>().WithMessage("Value cannot be null. (Parameter 'UniqueId')");
         }
 
-        [TestMethod]
+        [Test]
         public void TryAddItem_ArgumentNullException_NullValueZeroEntries()
         {
             var selector = new Selector<string>();
             Action action = () => selector.TryAddItem("a", null, 0);
 
-            action.ShouldThrow<ArgumentException>().WithMessage("Entries must have a value greater than 0");
+            action.Should().Throw<ArgumentException>().WithMessage("Must have a value greater than 0. (Parameter 'Entries')");
         }
 
         /// <summary>
         /// Verifies that the values added are accepted and not randomized yet
         /// </summary>
-        [TestMethod]
+        [Test]
         public void GenerateList()
         {
             var selector = new Selector<string>();
@@ -151,7 +151,7 @@ namespace Testing.Unit
         /// values do not remain in the same order as to their insertion
         /// order.
         /// </summary>
-        [TestMethod]
+        [Test]
         public void RandomizeList()
         {
             var orderedList = new List<string>()
@@ -187,7 +187,7 @@ namespace Testing.Unit
         /// Also checks to see that the <code>RandomSelect</code> returns
         /// the correct number of entries for each item after randomization.
         /// </summary>
-        [TestMethod]
+        [Test]
         public void Select()
         {
             var selector = new Selector<string>();
