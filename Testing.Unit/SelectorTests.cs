@@ -234,5 +234,43 @@ namespace Testing.Unit
              where s.UniqueId == "d"
              select s).Count().Should().Be(1);
         }
+
+        [Test]
+        public static void RandomSelectorSelectsAllElementsEventually()
+        {
+            var outputValues = new HashSet<string>();
+
+            for (int numberOfSelections = 0; numberOfSelections < 1000; numberOfSelections++)
+            {
+                var selector = new BNolan.RandomSelection.Selector<string>();
+                selector.TryAddItem("jen").Should().BeTrue();
+                selector.TryAddItem("michael").Should().BeTrue();
+                selector.TryAddItem("staci").Should().BeTrue();
+                outputValues.Add(selector.RandomSelect(1).First().Value);
+            }
+
+            outputValues.Should().Contain("jen");
+            outputValues.Should().Contain("michael");
+            outputValues.Should().Contain("staci");
+        }
+
+        [Test]
+        public static void RandomSelectorGeneratesAllIndicesEventually()
+        {
+            var outputValues = new HashSet<int>();
+
+            for (int numberOfSelections = 0; numberOfSelections < 1000; numberOfSelections++)
+            {
+                var selector = new BNolan.RandomSelection.Selector<string>();
+
+                outputValues.Add(selector.GenerateRandomIndex(5));
+            }
+
+            outputValues.Should().Contain(0);
+            outputValues.Should().Contain(1);
+            outputValues.Should().Contain(2);
+            outputValues.Should().Contain(3);
+            outputValues.Should().Contain(4);
+        }
     }
 }
