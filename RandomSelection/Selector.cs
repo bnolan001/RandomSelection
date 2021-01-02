@@ -158,12 +158,19 @@ namespace BNolan.RandomSelection
         }
 
         /// <summary>
-        /// Generates a random number that falls between 0 and the <code>upperLimit</code>
+        /// Generates a random number that is used as an index in the data array.
         /// </summary>
-        /// <param name="upperLimit"></param>
-        /// <returns>Random number from 0 to the <code>upperLimit</code></returns>
+        /// <param name="upperLimit">Length of the array which will serve as the upper limit of the number generator</param>
+        /// <returns>Random number from 0 but less than <code>upperLimit</code></returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when the <code>upperLimit</code> value is less than 1</exception>
         public int GenerateRandomIndex(int upperLimit)
         {
+            if (upperLimit <= 0)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(upperLimit)}", 
+                    $"The value of {upperLimit} is invalid.  Please use a number greater than 0.");
+            }
+
             int randomIndex = 0;
             using (var randomGenerator = new RNGCryptoServiceProvider())
             {
@@ -181,7 +188,8 @@ namespace BNolan.RandomSelection
                 byte[] fullIntArray = new byte[4];
                 // Create the byte array no larger than needed for the max
                 // set by the upperLimit parameter
-                byte[] randomNumber = new byte[arraySize + 1];
+                int randomNumberArraySize = arraySize + 1;
+                byte[] randomNumber = new byte[randomNumberArraySize];
                 do
                 {
                     // Reset the array to 0
@@ -190,7 +198,7 @@ namespace BNolan.RandomSelection
                     randomGenerator.GetBytes(randomNumber);
 
                     // Copy the value to an int32 sized byte array
-                    Array.Copy(randomNumber, fullIntArray, arraySize);
+                    Array.Copy(randomNumber, fullIntArray, randomNumberArraySize);
 
                     randomIndex = BitConverter.ToInt32(fullIntArray, 0);
                     // Keep looping until we have a valid index

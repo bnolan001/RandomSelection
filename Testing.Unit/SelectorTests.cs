@@ -61,7 +61,9 @@ namespace Testing.Unit
             action.Should().Throw<ArgumentNullException>().WithMessage("Object cannot be null. (Parameter 'item')");
         }
 
-
+        /// <summary>
+        /// Verifies an exception is thrown when an Item with a null UniqueId
+        /// </summary>
         [Test]
         public void TryAddItem_ArgumentNullException_NullValue()
         {
@@ -76,7 +78,9 @@ namespace Testing.Unit
 
         }
 
-
+        /// <summary>
+        /// Verifies an exception is thrown when an item with an Entries value of 0 is used
+        /// </summary>
         [Test]
         public void TryAddItem_ArgumentException_ZeroEntryValue()
         {
@@ -90,6 +94,9 @@ namespace Testing.Unit
             action.Should().Throw<ArgumentException>().WithMessage("Must have a value greater than 0. (Parameter 'Entries')");
         }
 
+        /// <summary>
+        /// Verifies an exception is thrown when an Item with a null UniqueId
+        /// </summary>
         [Test]
         public void TryAddItem_ArgumentNullException_EmptyItem()
         {
@@ -233,6 +240,70 @@ namespace Testing.Unit
             (from s in selected
              where s.UniqueId == "d"
              select s).Count().Should().Be(1);
+        }
+
+        /// <summary>
+        /// Verifies that RandomSelect will select each added item from the source array
+        /// </summary>
+        [Test]
+        public static void RandomSelect_SelectsAllElementsEventually()
+        {
+            var outputValues = new HashSet<string>();
+
+            for (int numberOfSelections = 0; numberOfSelections < 1000; numberOfSelections++)
+            {
+                var selector = new Selector<string>();
+                selector.TryAddItem("jen").Should().BeTrue();
+                selector.TryAddItem("michael").Should().BeTrue();
+                selector.TryAddItem("staci").Should().BeTrue();
+                outputValues.Add(selector.RandomSelect(1).First().Value);
+            }
+
+            outputValues.Should().Contain("jen");
+            outputValues.Should().Contain("michael");
+            outputValues.Should().Contain("staci");
+        }
+
+        /// <summary>
+        /// Verifies that the GenerateRandomIndex generates only numbers from 0 to 4 when an upperLimit
+        /// of 5 is used.
+        /// </summary>
+        [Test]
+        public static void GenerateRandomIndex_GeneratesAllIndicesEventually()
+        {
+            var outputValues = new HashSet<int>();
+
+            for (int numberOfSelections = 0; numberOfSelections < 1000; numberOfSelections++)
+            {
+                var selector = new Selector<string>();
+
+                outputValues.Add(selector.GenerateRandomIndex(5));
+            }
+
+            outputValues.Should().Contain(0);
+            outputValues.Should().Contain(1);
+            outputValues.Should().Contain(2);
+            outputValues.Should().Contain(3);
+            outputValues.Should().Contain(4);
+            outputValues.Where(x => x < 0 || x > 4).Count().Should().Be(0);
+        }
+
+
+        /// <summary>
+        /// Verifies that an exception is thrown if the caller passes an upperLimit value less than 1
+        /// </summary>
+        [Test]
+        public static void GenerateRandomIndex_ArgumentOutOfRangeException()
+        {
+            var selector = new Selector<string>();
+
+            // Exception Testing
+            Action action = () => selector.GenerateRandomIndex(0);
+            action.Should().Throw<ArgumentOutOfRangeException>().WithMessage($"The value of 0 is invalid.  Please use a number greater than 0. (Parameter 'upperLimit')");
+
+            action = () => selector.GenerateRandomIndex(-1);
+            action.Should().Throw<ArgumentOutOfRangeException>().WithMessage($"The value of -1 is invalid.  Please use a number greater than 0. (Parameter 'upperLimit')");
+
         }
     }
 }
