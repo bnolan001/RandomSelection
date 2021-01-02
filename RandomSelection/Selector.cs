@@ -169,22 +169,40 @@ namespace BNolan.RandomSelection
                 throw new ArgumentOutOfRangeException("upperLimit");
             }
 
+            int randomIndex = 0;
             using (var randomGenerator = new RNGCryptoServiceProvider())
             {
-                byte[] uint32Buffer = new byte[sizeof(UInt32)];
-                while (true)
+                byte[] maxIndex = BitConverter.GetBytes(upperLimit);
+                int arraySize = 3;
+                for (; arraySize > 0; arraySize--)
                 {
-                    randomGenerator.GetBytes(uint32Buffer);
-                    UInt32 rand = BitConverter.ToUInt32(uint32Buffer, 0);
-
-                    Int64 max = (1 + (Int64)UInt32.MaxValue);
-                    Int64 remainder = max % upperLimit;
-                    if (rand < max - remainder)
+                    if (maxIndex[arraySize] != 0)
                     {
-                        return (Int32)(rand % upperLimit);
+                        break;
                     }
                 }
+
+                // Create the byte array used for calculating the 32bit int
+                byte[] fullIntArray = new byte[4];
+                // Create the byte array no larger than needed for the max
+                // set by the upperLimit parameter
+                byte[] randomNumber = new byte[arraySize + 1];
+                do
+                {
+                    // Reset the array to 0
+                    Array.Clear(fullIntArray, 0, fullIntArray.Length);
+                    // Get the random value
+                    randomGenerator.GetBytes(randomNumber);
+
+                    // Copy the value to an int32 sized byte array
+                    Array.Copy(randomNumber, fullIntArray, arraySize + 1);
+
+                    randomIndex = BitConverter.ToInt32(fullIntArray, 0);
+                    // Keep looping until we have a valid index
+                } while (randomIndex < 0 || randomIndex >= upperLimit);
             }
+
+            return randomIndex;
         }
 
         /// <summary>
