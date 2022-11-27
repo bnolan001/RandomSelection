@@ -34,7 +34,7 @@ namespace BNolan.RandomSelection
 
             if (string.IsNullOrEmpty(item.UniqueId))
             {
-                throw new ArgumentNullException(nameof(item.UniqueId), "Value cannot be null.");
+                throw new ArgumentNullException(nameof(item.UniqueId), "Value cannot be null or empty.");
             }
 
             if (item.Entries < 1)
@@ -167,12 +167,12 @@ namespace BNolan.RandomSelection
         {
             if (upperLimit <= 0)
             {
-                throw new ArgumentOutOfRangeException($"{nameof(upperLimit)}", 
+                throw new ArgumentOutOfRangeException($"{nameof(upperLimit)}",
                     $"The value of {upperLimit} is invalid.  Please use a number greater than 0.");
             }
 
             int randomIndex = 0;
-            using (var randomGenerator = new RNGCryptoServiceProvider())
+            using (var randomGenerator = RandomNumberGenerator.Create())
             {
                 byte[] maxIndex = BitConverter.GetBytes(upperLimit);
                 int arraySize = 3;
