@@ -1,10 +1,10 @@
-using System;
-using FluentAssertions;
-using System.Collections.Generic;
-using BNolan.RandomSelection.Library;
-using System.Linq;
 using BNolan.RandomSelection;
+using BNolan.RandomSelection.Library;
+using FluentAssertions;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Testing.Unit
 {
@@ -74,7 +74,7 @@ namespace Testing.Unit
                 Value = null,
                 Entries = 0
             });
-            action.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'UniqueId')");
+            action.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null or empty. (Parameter 'UniqueId')");
 
         }
 
@@ -102,7 +102,7 @@ namespace Testing.Unit
         {
             var selector = new Selector<string>();
             Action action = () => selector.TryAddItem(new Item<string>());
-            action.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'UniqueId')");
+            action.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null or empty. (Parameter 'UniqueId')");
         }
 
         [Test]
@@ -115,7 +115,7 @@ namespace Testing.Unit
                 Value = null,
                 Entries = 0
             });
-            action.Should().Throw<ArgumentException>().WithMessage("Value cannot be null. (Parameter 'UniqueId')");
+            action.Should().Throw<ArgumentException>().WithMessage("Value cannot be null or empty. (Parameter 'UniqueId')");
         }
 
         [Test]
@@ -185,6 +185,72 @@ namespace Testing.Unit
             }
             // Make sure that at least one of the elements are not in the same
             // position.  Nearly all should not be.
+            orderedCt.Should().BeLessThan(orderedList.Count);
+        }
+
+        /// <summary>
+        /// Checks the <code>RandomizeList</code> function to verify that
+        /// values do not remain in the same order as to their insertion
+        /// order.
+        /// </summary>
+        [Test]
+        public void RandomizeList_Small()
+        {
+            var orderedList = new List<string>()
+            {
+                "a",
+                "b",
+                "c",
+            };
+
+            var selector = new Selector<string>();
+            var randomizedList = selector.RandomizeList(orderedList);
+            // Check each index and count the number of matches
+            int orderedCt = 0;
+            for (var idx = 0; idx < orderedList.Count; idx++)
+            {
+                if (orderedList[idx].Equals(randomizedList[idx]))
+                {
+                    orderedCt++;
+                }
+            }
+            // Make sure that at least one of the elements are not in the same
+            // position.  Nearly all should not be.
+            orderedCt.Should().BeLessThan(orderedList.Count);
+        }
+
+        /// <summary>
+        /// Checks the <code>RandomizeList</code> function to verify that
+        /// values do not remain in the same order when the list is generated
+        /// multiple times.
+        /// </summary>
+        [Test]
+        public void RandomizeList_MultiCheckOrder()
+        {
+            var orderedList = new List<string>()
+            {
+                "a",
+                "b",
+                "c",
+                "d",
+                "e",
+                "f",
+                "g"
+            };
+
+            var selector = new Selector<string>();
+            var randomizedListOne = selector.RandomizeList(orderedList);
+            var randomizedListTwo = selector.RandomizeList(orderedList);
+            var orderedCt = 0;
+
+            for (int idx = 0; idx < orderedList.Count; idx++)
+            {
+                if (randomizedListOne[idx].Equals(randomizedListTwo[idx]))
+                {
+                    orderedCt++;
+                }
+            }
+
             orderedCt.Should().BeLessThan(orderedList.Count);
         }
 
