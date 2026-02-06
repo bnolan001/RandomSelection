@@ -112,6 +112,26 @@ namespace BNolan.RandomSelection
             return true;
         }
 
+        public bool TryAddItem(List<T> items, bool ignoreDuplicates = true)
+        {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items), "Value cannot be null.");
+            }
+
+            bool success = true;
+            foreach(var item in items)
+            {
+                success &= TryAddItem(item);
+                if (!ignoreDuplicates && !success)
+                {
+                    throw new ArgumentException($"Duplicate key occurred {item.ToString()}");
+                }
+            }
+
+            return success;
+        }
+
         /// <summary>
         /// Creates a list filled with the <code>uniqueId</code> from
         /// each item based on the entries
@@ -212,9 +232,9 @@ namespace BNolan.RandomSelection
         /// Takes the items added to storage and randomly selects the
         /// <code>numToSelect</code> items from the available list
         /// </summary>
-        /// <param name="numToSelect">Number of items to select</param>
+        /// <param name="numToSelect">Number of items to select, default is 1</param>
         /// <returns>List of selected Items</returns>
-        public List<Item<T>> RandomSelect(int numToSelect)
+        public List<Item<T>> RandomSelect(int numToSelect = 1)
         {
             var selected = new List<Item<T>>();
             var fullList = GenerateList();
