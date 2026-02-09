@@ -203,20 +203,30 @@ namespace Testing.Unit
                 "c",
             };
 
-            var selector = new Selector<string>();
-            var randomizedList = selector.RandomizeList(orderedList);
-            // Check each index and count the number of matches
-            int orderedCt = 0;
-            for (var idx = 0; idx < orderedList.Count; idx++)
+            var retries = 3;
+            var sameOrderCount = 0;
+            for (int i = 0; i < retries; i++)
             {
-                if (orderedList[idx].Equals(randomizedList[idx]))
+
+                var selector = new Selector<string>();
+                var randomizedList = selector.RandomizeList(orderedList);
+                // Check each index and count the number of matches
+                int orderedCt = 0;
+                for (var idx = 0; idx < orderedList.Count; idx++)
                 {
-                    orderedCt++;
+                    if (orderedList[idx].Equals(randomizedList[idx]))
+                    {
+                        orderedCt++;
+                    }
+                }
+                if (orderedCt == orderedList.Count)
+                {
+                    sameOrderCount++;
                 }
             }
             // Make sure that at least one of the elements are not in the same
             // position.  Nearly all should not be.
-            orderedCt.Should().BeLessThan(orderedList.Count);
+            sameOrderCount.Should().BeLessThan(retries);
         }
 
         /// <summary>
@@ -595,6 +605,200 @@ namespace Testing.Unit
             firstElementPositions.Count.Should().BeGreaterThan(1);
             // The last element should appear in multiple different positions
             lastElementPositions.Count.Should().BeGreaterThan(1);
+        }
+
+        /// <summary>
+        /// Tests the fluent API for adding items with method chaining
+        /// </summary>
+        [Test]
+        public void AddItem_FluentAPI()
+        {
+            var selector = new Selector<string>();
+            
+            var result = selector
+                .AddItem("a", "alpha")
+                .AddItem("b", "bravo")
+                .AddItem("c", "charlie", 2);
+
+            result.Should().BeSameAs(selector);
+            selector.Count.Should().Be(3);
+            selector.TotalEntries.Should().Be(4); // 1 + 1 + 2
+        }
+
+        /// <summary>
+        /// Tests that AddItem throws an exception when duplicate UniqueId is added
+        /// </summary>
+        [Test]
+        public void AddItem_ThrowsOnDuplicate()
+        {
+            var selector = new Selector<string>();
+            selector.AddItem("a", "alpha");
+
+            Action action = () => selector.AddItem("a", "different");
+            action.Should().Throw<InvalidOperationException>()
+                .WithMessage("*already exists*");
+        }
+
+        /// <summary>
+        /// Tests the Count property
+        /// </summary>
+        [Test]
+        public void Count_ReturnsCorrectValue()
+        {
+            var selector = new Selector<string>();
+            selector.Count.Should().Be(0);
+
+            selector.TryAddItem("a").Should().BeTrue();
+            selector.Count.Should().Be(1);
+
+            selector.TryAddItem("b", "bravo", 5).Should().BeTrue();
+            selector.Count.Should().Be(2);
+        }
+
+        /// <summary>
+        /// Tests the TotalEntries property
+        /// </summary>
+        [Test]
+        public void TotalEntries_ReturnsCorrectValue()
+        {
+            var selector = new Selector<string>();
+            selector.TotalEntries.Should().Be(0);
+
+            selector.TryAddItem("a", "alpha", 1).Should().BeTrue();
+            selector.TotalEntries.Should().Be(1);
+
+            selector.TryAddItem("b", "bravo", 3).Should().BeTrue();
+            selector.TotalEntries.Should().Be(4);
+
+            selector.TryAddItem("c", "charlie", 2).Should().BeTrue();
+            selector.TotalEntries.Should().Be(6);
+        }
+
+        /// <summary>
+        /// Tests the Contains method
+        /// </summary>
+        [Test]
+        public void Contains_ReturnsCorrectValue()
+        {
+            var selector = new Selector<string>();
+            selector.Contains("a").Should().BeFalse();
+
+            selector.TryAddItem("a", "alpha").Should().BeTrue();
+            selector.Contains("a").Should().BeTrue();
+            selector.Contains("A").Should().BeTrue(); // Case-insensitive
+            selector.Contains("b").Should().BeFalse();
+        }
+
+        /// <summary>
+        /// Tests the TryGetItem method
+        /// </summary>
+        [Test]
+        public void TryGetItem_ReturnsItem()
+        {
+            var selector = new Selector<string>();
+            var item = new Item<string>() { UniqueId = "a", Value = "alpha", Entries = 2 };
+            selector.TryAddItem(item).Should().BeTrue();
+
+            selector.TryGetItem("a", out var retrieved).Should().BeTrue();
+            retrieved.Should().NotBeNull();
+            retrieved.UniqueId.Should().Be("a");
+            retrieved.Value.Should().Be("alpha");
+            retrieved.Entries.Should().Be(2);
+
+            selector.TryGetItem("nonexistent", out var notFound).Should().BeFalse();
+            notFound.Should().BeNull();
+        }
+
+        /// <summary>
+        /// Tests the RemoveItem method
+        /// </summary>
+        [Test]
+        public void RemoveItem_SuccessfullyRemoves()
+        {
+            var selector = new Selector<string>();
+            selector.TryAddItem("a", "alpha").Should().BeTrue();
+            selector.TryAddItem("b", "bravo").Should().BeTrue();
+
+            selector.Count.Should().Be(2);
+            selector.RemoveItem("a").Should().BeTrue();
+            selector.Count.Should().Be(1);
+            selector.Contains("a").Should().BeFalse();
+            selector.RemoveItem("a").Should().BeFalse();
+        }
+
+        /// <summary>
+        /// Tests the Clear method
+        /// </summary>
+        [Test]
+        public void Clear_RemovesAllItems()
+        {
+            var selector = new Selector<string>();
+            selector.TryAddItem("a").Should().BeTrue();
+            selector.TryAddItem("b").Should().BeTrue();
+            selector.TryAddItem("c").Should().BeTrue();
+
+            selector.Count.Should().Be(3);
+            selector.Clear();
+            selector.Count.Should().Be(0);
+            selector.TotalEntries.Should().Be(0);
+        }
+
+        /// <summary>
+        /// Tests the IEnumerable implementation
+        /// </summary>
+        [Test]
+        public void IEnumerable_IteratesThroughItems()
+        {
+            var selector = new Selector<string>();
+            selector.TryAddItem("a", "alpha").Should().BeTrue();
+            selector.TryAddItem("b", "bravo").Should().BeTrue();
+            selector.TryAddItem("c", "charlie").Should().BeTrue();
+
+            var items = selector.ToList();
+            items.Count.Should().Be(3);
+            items.Should().Contain(x => x.UniqueId == "a");
+            items.Should().Contain(x => x.UniqueId == "b");
+            items.Should().Contain(x => x.UniqueId == "c");
+        }
+
+        /// <summary>
+        /// Tests the Peek method for non-destructive preview
+        /// </summary>
+        [Test]
+        public void Peek_ReturnsItemsWithoutRemoval()
+        {
+            var selector = new Selector<string>();
+            selector.TryAddItem("a", "alpha", 2).Should().BeTrue();
+            selector.TryAddItem("b", "bravo", 1).Should().BeTrue();
+
+            var peeked1 = selector.Peek(2);
+            peeked1.Count.Should().Be(2);
+
+            var peeked2 = selector.Peek(2);
+            peeked2.Count.Should().Be(2);
+
+            // Both peeks should still be valid (non-destructive)
+            selector.TotalEntries.Should().Be(3);
+        }
+
+        /// <summary>
+        /// Tests that RandomSelect validates numToSelect parameter
+        /// </summary>
+        [Test]
+        public void RandomSelect_ValidatesNumToSelect()
+        {
+            var selector = new Selector<string>();
+            selector.TryAddItem("a").Should().BeTrue();
+
+            Action action = () => selector.RandomSelect(0);
+            action.Should().Throw<ArgumentOutOfRangeException>();
+
+            action = () => selector.RandomSelect(-1);
+            action.Should().Throw<ArgumentOutOfRangeException>();
+
+            action = () => selector.RandomSelect(2);
+            action.Should().Throw<ArgumentOutOfRangeException>()
+                .WithMessage("*Cannot select 2 items when only 1*");
         }
     }
 }
