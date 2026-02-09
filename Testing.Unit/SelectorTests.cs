@@ -371,5 +371,230 @@ namespace Testing.Unit
             action.Should().Throw<ArgumentOutOfRangeException>().WithMessage($"The value of -1 is invalid.  Please use a number greater than 0. (Parameter 'upperLimit')");
 
         }
+
+        /// <summary>
+        /// Tests randomness by verifying that GenerateRandomIndex produces a uniform distribution
+        /// across the valid range using a basic statistical test
+        /// </summary>
+        [Test]
+        public static void GenerateRandomIndex_UniformDistribution()
+        {
+            var selector = new Selector<string>();
+            int rangeSize = 10;
+            int iterations = 10000;
+            var distribution = new Dictionary<int, int>();
+
+            for (int i = 0; i < rangeSize; i++)
+            {
+                distribution[i] = 0;
+            }
+
+            for (int i = 0; i < iterations; i++)
+            {
+                int randomIndex = selector.GenerateRandomIndex(rangeSize);
+                distribution[randomIndex]++;
+            }
+
+            // Each index should be selected roughly equally
+            // Allow 25% deviation from expected frequency
+            double expectedFrequency = (double)iterations / rangeSize;
+            double tolerance = expectedFrequency * 0.25;
+
+            foreach (var count in distribution.Values)
+            {
+                count.Should().BeGreaterThan((int)(expectedFrequency - tolerance));
+                count.Should().BeLessThan((int)(expectedFrequency + tolerance));
+            }
+        }
+
+        /// <summary>
+        /// Verifies that multiple Selector instances produce different randomization results,
+        /// ensuring that random seeds are not identical across instances
+        /// </summary>
+        [Test]
+        public static void RandomSelect_IndependentInstances()
+        {
+            var orderedList = new List<string>() { "a", "b", "c", "d", "e", "f", "g" };
+            var selector1 = new Selector<string>();
+            var selector2 = new Selector<string>();
+
+            var randomized1 = selector1.RandomizeList(orderedList);
+            var randomized2 = selector2.RandomizeList(orderedList);
+
+            // The probability of two independent random shuffles being identical is extremely low
+            randomized1.SequenceEqual(randomized2).Should().BeFalse("Different instances should produce different randomizations");
+        }
+
+        /// <summary>
+        /// Tests that RandomizeList properly shuffles a list with duplicate elements
+        /// </summary>
+        [Test]
+        public void RandomizeList_WithDuplicates()
+        {
+            var listWithDuplicates = new List<string>() { "a", "a", "b", "b", "c", "c" };
+            var selector = new Selector<string>();
+
+            // Run randomization multiple times
+            var randomized1 = selector.RandomizeList(listWithDuplicates);
+            var randomized2 = selector.RandomizeList(listWithDuplicates);
+
+            // Both should be valid permutations of the original
+            randomized1.OrderBy(x => x).Should().Equal(listWithDuplicates.OrderBy(x => x));
+            randomized2.OrderBy(x => x).Should().Equal(listWithDuplicates.OrderBy(x => x));
+
+            // They should not always be the same
+            randomized1.SequenceEqual(randomized2).Should().BeFalse("Multiple randomizations should produce different results");
+        }
+
+        /// <summary>
+        /// Verifies that RandomSelect produces uniformly distributed selections across items
+        /// when called multiple times
+        /// </summary>
+        [Test]
+        public static void RandomSelect_UniformDistribution()
+        {
+            var selectionCounts = new Dictionary<string, int> { { "item1", 0 }, { "item2", 0 }, { "item3", 0 } };
+            int iterations = 3000;
+
+            for (int i = 0; i < iterations; i++)
+            {
+                var selector = new Selector<string>();
+                selector.TryAddItem("item1").Should().BeTrue();
+                selector.TryAddItem("item2").Should().BeTrue();
+                selector.TryAddItem("item3").Should().BeTrue();
+
+                var selected = selector.RandomSelect(1);
+                selectionCounts[selected[0].Value.ToString()]++;
+            }
+
+            // Each item should be selected roughly 1/3 of the time
+            // Allow 20% deviation
+            double expectedFrequency = (double)iterations / 3;
+            double tolerance = expectedFrequency * 0.20;
+
+            foreach (var count in selectionCounts.Values)
+            {
+                count.Should().BeGreaterThan((int)(expectedFrequency - tolerance));
+                count.Should().BeLessThan((int)(expectedFrequency + tolerance));
+            }
+        }
+
+        /// <summary>
+        /// Verifies that when selecting multiple items, the distribution of selections is uniform
+        /// </summary>
+        [Test]
+        public static void RandomSelect_MultipleSelections_UniformDistribution()
+        {
+            var selector = new Selector<string>();
+            selector.TryAddItem(new Item<string>() { UniqueId = "item1", Value = "value1", Entries = 2 });
+            selector.TryAddItem(new Item<string>() { UniqueId = "item2", Value = "value2", Entries = 2 });
+            selector.TryAddItem(new Item<string>() { UniqueId = "item3", Value = "value3", Entries = 2 });
+
+            var selectionCounts = new Dictionary<string, int> { { "item1", 0 }, { "item2", 0 }, { "item3", 0 } };
+            int iterations = 1000;
+
+            for (int i = 0; i < iterations; i++)
+            {
+                var selector2 = new Selector<string>();
+                selector2.TryAddItem(new Item<string>() { UniqueId = "item1", Value = "value1", Entries = 2 });
+                selector2.TryAddItem(new Item<string>() { UniqueId = "item2", Value = "value2", Entries = 2 });
+                selector2.TryAddItem(new Item<string>() { UniqueId = "item3", Value = "value3", Entries = 2 });
+
+                var selected = selector2.RandomSelect(3);
+                foreach (var item in selected)
+                {
+                    selectionCounts[item.UniqueId]++;
+                }
+            }
+
+            // Each item should be selected roughly equally (proportional to entries)
+            double expectedFrequency = (double)(iterations * 3) / 3;
+            double tolerance = expectedFrequency * 0.20;
+
+            foreach (var count in selectionCounts.Values)
+            {
+                count.Should().BeGreaterThan((int)(expectedFrequency - tolerance));
+                count.Should().BeLessThan((int)(expectedFrequency + tolerance));
+            }
+        }
+
+        /// <summary>
+        /// Tests that RandomizeList consistently preserves all elements from the original list
+        /// while changing their order
+        /// </summary>
+        [Test]
+        public void RandomizeList_PreservesAllElements()
+        {
+            var orderedList = new List<string>() { "alpha", "bravo", "charlie", "delta", "echo" };
+            var selector = new Selector<string>();
+
+            for (int i = 0; i < 100; i++)
+            {
+                var randomized = selector.RandomizeList(orderedList);
+
+                randomized.Count.Should().Be(orderedList.Count);
+                randomized.OrderBy(x => x).Should().Equal(orderedList.OrderBy(x => x));
+            }
+        }
+
+        /// <summary>
+        /// Edge case: RandomSelect with single item should always return that item
+        /// </summary>
+        [Test]
+        public void RandomSelect_SingleItem()
+        {
+            var selector = new Selector<string>();
+            selector.TryAddItem("onlyItem").Should().BeTrue();
+
+            var selected = selector.RandomSelect(1);
+
+            selected.Count.Should().Be(1);
+            selected[0].Value.Should().Be("onlyItem");
+        }
+
+        /// <summary>
+        /// Edge case: RandomSelect requesting all items should return all items
+        /// </summary>
+        [Test]
+        public void RandomSelect_AllItems()
+        {
+            var selector = new Selector<string>();
+            selector.TryAddItem(new Item<string>() { UniqueId = "a", Value = "alpha", Entries = 2 });
+            selector.TryAddItem(new Item<string>() { UniqueId = "b", Value = "bravo", Entries = 3 });
+
+            var selected = selector.RandomSelect(5);
+
+            selected.Count.Should().Be(5);
+            var uniqueIds = selected.Select(x => x.UniqueId).ToList();
+            uniqueIds.Count(x => x == "a").Should().Be(2);
+            uniqueIds.Count(x => x == "b").Should().Be(3);
+        }
+
+        /// <summary>
+        /// Verifies that the randomization is not just a simple rotation
+        /// by testing that first and last elements change positions across runs
+        /// </summary>
+        [Test]
+        public static void RandomizeList_NotSimpleRotation()
+        {
+            var orderedList = new List<string>() { "1", "2", "3", "4", "5" };
+            var selector = new Selector<string>();
+
+            var firstElementPositions = new HashSet<int>();
+            var lastElementPositions = new HashSet<int>();
+
+            for (int i = 0; i < 100; i++)
+            {
+                var randomized = selector.RandomizeList(orderedList);
+
+                firstElementPositions.Add(randomized.IndexOf("1"));
+                lastElementPositions.Add(randomized.IndexOf("5"));
+            }
+
+            // The first element should appear in multiple different positions
+            firstElementPositions.Count.Should().BeGreaterThan(1);
+            // The last element should appear in multiple different positions
+            lastElementPositions.Count.Should().BeGreaterThan(1);
+        }
     }
 }

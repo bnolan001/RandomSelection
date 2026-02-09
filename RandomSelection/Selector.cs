@@ -1,6 +1,7 @@
 ﻿using BNolan.RandomSelection.Library;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 
 namespace BNolan.RandomSelection
@@ -112,24 +113,37 @@ namespace BNolan.RandomSelection
             return true;
         }
 
-        public bool TryAddItem(List<T> items, bool ignoreDuplicates = true)
+        /// <summary>
+        /// Attempts to add a collection of items to the container if none of their keys already exist.
+        /// </summary>
+        /// <remarks>If any item's key already exists in the container, or if adding any item fails, no
+        /// items are added and the method returns false. Keys are compared in a case-insensitive manner based on the
+        /// uppercase string representation of each item.</remarks>
+        /// <param name="items">The list of items to add. Cannot be null. Each item's key is determined by its string representation,
+        /// converted to uppercase.</param>
+        /// <returns>true if all items were added successfully; otherwise, false.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if the items parameter is null.</exception>
+        public bool TryAddItems(List<T> items)
         {
             if (items == null)
             {
                 throw new ArgumentNullException(nameof(items), "Value cannot be null.");
             }
+            var newKeys = new HashSet<string>(items.Select(i => i.ToString().ToUpper()));
+            if (_dicItems.Any(i => newKeys.Contains(i.Key)))
+            {
+                return false;
+            }
 
-            bool success = true;
             foreach(var item in items)
             {
-                success &= TryAddItem(item);
-                if (!ignoreDuplicates && !success)
+                if (!TryAddItem(item))
                 {
-                    throw new ArgumentException($"Duplicate key occurred {item.ToString()}");
+                    return false;
                 }
             }
 
-            return success;
+            return true;
         }
 
         /// <summary>
