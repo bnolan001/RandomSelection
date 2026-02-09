@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>BNolan.RandomSelection</RootNamespace>
-    <Version>3.0.0</Version>
+    <Version>3.1.0</Version>
     <Authors>Brian Nolan</Authors>
     <Company>BNolan.org</Company>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -12,11 +12,11 @@
     <RepositoryUrl>https://github.com/bnolan001/RandomSelection.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>random;weighted;list;cryptography</PackageTags>
-    <PackageReleaseNotes>Updated to .NET 6, changed to use RandomNumberGenerator, and added unit tests.</PackageReleaseNotes>
+    <PackageReleaseNotes>Cleaned up the code, add fluent api calls, enhanced api features.</PackageReleaseNotes>
     <Description>RandomSelection is designed to take in entries, with the option to give some entries a higher chance at being selected, and then return one or more selectees. It utilizes System.Security.Cryptography to ensure a higher quality random number is used for shuffling the data and selecting winners.</Description>
-    <Copyright>BNolan.org 2022</Copyright>
+    <Copyright>BNolan.org 2026</Copyright>
     <NeutralLanguage></NeutralLanguage>
-    <Title>RandomSelectioin</Title>
+    <Title>RandomSelection</Title>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
